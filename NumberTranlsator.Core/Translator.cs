@@ -55,27 +55,34 @@ namespace NumberTranlsator.Core
             int number;
             if (int.TryParse(word, out number) && number > 0 && number < 10000 )
             {
-                translatedNumber = this.numberPlaceholder;
-                switch (word.Length)
-                {
-                    case 1:
-                        translatedNumber = TranslateOneDigitNumber(number);
-                        break;
-                    case 2:
-                        translatedNumber = TranslateTwoDigitNumber(number);
-                        break;
-                    case 3:
-                        translatedNumber = TranslateThreeDigitNumber(number);
-                        break;
-                    case 4:
-                        translatedNumber = TranslateFourDigitNumber(number);
-                        break;
-                }
+                translatedNumber = TranslateNumber(number, word.Length);
             }
 
             return translatedNumber;
         }
 
+        private string TranslateNumber(int number, int digitsCount)
+        {
+            string translatedNumber = this.numberPlaceholder;
+
+            switch (digitsCount)
+            {
+                case 1:
+                    translatedNumber = TranslateOneDigitNumber(number);
+                    break;
+                case 2:
+                    translatedNumber = TranslateTwoDigitNumber(number);
+                    break;
+                case 3:
+                    translatedNumber = TranslateThreeDigitNumber(number);
+                    break;
+                case 4:
+                    translatedNumber = TranslateFourDigitNumber(number);
+                    break;
+            }
+
+            return translatedNumber;
+        }
         private string TranslateFourDigitNumber(int number)
         {
             string translatedNumber = this.numberPlaceholder;
@@ -90,14 +97,14 @@ namespace NumberTranlsator.Core
                 int firstDigit = number / 1000;
                 int roundedNumber = (firstDigit) * 1000;
 
-                string thousands = string.Empty;
+                string thousandsTranslated = this.numberPlaceholder;
                 if (uniqueNumbers.ContainsKey(roundedNumber))
                 {
-                    thousands = uniqueNumbers[roundedNumber];
+                    thousandsTranslated = uniqueNumbers[roundedNumber];
                 }
                 else
                 {
-                    thousands = TranslateOneDigitNumber(firstDigit) + fourDigitsNumSuffix;
+                    thousandsTranslated = TranslateNumber(firstDigit, 1) + fourDigitsNumSuffix;
                 }
                 
                 string conjunction = " ";
@@ -106,7 +113,7 @@ namespace NumberTranlsator.Core
                     conjunction = " и ";
                 }
 
-                translatedNumber = thousands + conjunction + TranslateThreeDigitNumber(reminder);
+                translatedNumber = thousandsTranslated + conjunction + TranslateNumber(reminder, 3);
             }
 
             return translatedNumber;
@@ -125,15 +132,15 @@ namespace NumberTranlsator.Core
                 int firstDigit = number / 100;
                 int roundedNumber = firstDigit * 100;
 
-                string hundreds = string.Empty;
+                string hundredsTranslated = this.numberPlaceholder;
                 if (uniqueNumbers.ContainsKey(roundedNumber))
                 {
-                    hundreds = uniqueNumbers[roundedNumber];
+                    hundredsTranslated = uniqueNumbers[roundedNumber];
                 }
                 else
                 {
                     string hundredsSuffix = roundedNumber < 400 ? this.smallThreeDigitsNumSuffix : this.bigThreeDigitsNumSuffix;
-                    hundreds = TranslateOneDigitNumber(firstDigit) + hundredsSuffix;
+                    hundredsTranslated = TranslateNumber(firstDigit, 1) + hundredsSuffix;
                 }
 
                 string conjunction = " ";
@@ -142,7 +149,7 @@ namespace NumberTranlsator.Core
                     conjunction = " и ";
                 }
 
-                translatedNumber = hundreds + conjunction + TranslateTwoDigitNumber(reminder);
+                translatedNumber = hundredsTranslated + conjunction + TranslateNumber(reminder, 2);
             }
 
             return translatedNumber;
@@ -158,8 +165,8 @@ namespace NumberTranlsator.Core
             else if (number >= 13 && number <= 19)
             {
                 int lastDigit = number % 10;
-                string lastDigitStr = TranslateOneDigitNumber(lastDigit);
-                translatedNumber = lastDigitStr + smallTwoDigitsNumSuffix;
+                string lastDigitTranslated = TranslateNumber(lastDigit, 1);
+                translatedNumber = lastDigitTranslated + smallTwoDigitsNumSuffix;
             }
             else if(number > 20)
             {
@@ -168,13 +175,13 @@ namespace NumberTranlsator.Core
 
                 if (lastDigit == 0)
                 {
-                    string firstDigitStr = TranslateOneDigitNumber(firstDigit);
-                    translatedNumber = firstDigitStr + bigTwoDigitsNumSuffix;
+                    string firstDigitTranslated = TranslateNumber(firstDigit, 1);
+                    translatedNumber = firstDigitTranslated + bigTwoDigitsNumSuffix;
                 }
                 else
                 {
                     int roundedNumber = firstDigit * 10;
-                    translatedNumber = TranslateTwoDigitNumber(roundedNumber) + " и " + TranslateOneDigitNumber(lastDigit);
+                    translatedNumber = TranslateNumber(roundedNumber, 2) + " и " + TranslateNumber(lastDigit, 1);
                 }
             }
 
