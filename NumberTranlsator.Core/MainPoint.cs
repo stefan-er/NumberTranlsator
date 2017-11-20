@@ -20,6 +20,7 @@ namespace NumberTranlsator.Core
             }
 
             string translatedText = textManipulator.GetTextFromWords(translatedWords);
+            bool ok = translatedText == "Днес на пътя попаднаха сто двадесет и три коли от които двадесет бяха сини десет лилави единадесет зелени пет черни двадесет и едно кафяви тридесет и пет бели и останалите шарени хиляда нови коли дойдоха а после още две хиляди и сто а после още три хиляди двеста и двадесет и още пет хиляди осемстотин и четиридесет";
             
             Console.WriteLine(translatedText);
         }

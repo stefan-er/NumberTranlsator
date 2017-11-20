@@ -9,21 +9,20 @@ namespace NumberTranlsator.Core
         private string smallThreeDigitsNumSuffix;
         private string bigThreeDigitsNumSuffix;
         private string fourDigitsNumSuffix;
-        private Dictionary<int, string> digits;
         private Dictionary<int, string> uniqueNumbers;
         private string numberPlaceholder;
         private string suffixPlaceholder;
         
         public Translator()
         {
-            smallTwoDigitsNumSuffix = "надесет";
-            bigTwoDigitsNumSuffix = "десет";
-            smallThreeDigitsNumSuffix = "ста";
-            bigThreeDigitsNumSuffix = "стотин";
-            fourDigitsNumSuffix = " хиляди";
-
+            this.smallTwoDigitsNumSuffix = "надесет";
+            this.bigTwoDigitsNumSuffix = "десет";
+            this.smallThreeDigitsNumSuffix = "ста";
+            this.bigThreeDigitsNumSuffix = "стотин";
+            this.fourDigitsNumSuffix = " хиляди";
+            
             //Remark: not implemented for 0
-            digits = new Dictionary<int, string>
+            this.uniqueNumbers = new Dictionary<int, string>
             {
                 { 1, "едно" },
                 { 2, "две" },
@@ -33,10 +32,7 @@ namespace NumberTranlsator.Core
                 { 6, "шест"   },
                 { 7, "седем"  },
                 { 8, "осем" },
-                { 9, "девет" }
-            };
-
-            uniqueNumbers = new Dictionary<int, string> {
+                { 9, "девет" },
                 { 10, "десет" },
                 { 11, "единадесет" },
                 { 12, "дванадесет" },
@@ -67,102 +63,55 @@ namespace NumberTranlsator.Core
         {
             string translatedNumber = this.numberPlaceholder;
 
-            int digitsCount = number.DigitsCount();
-            switch (digitsCount)
+            if (this.uniqueNumbers.ContainsKey(number))
             {
-                case 1:
-                    translatedNumber = TranslateOneDigitNumber(number);
-                    break;
-                case 2:
-                    translatedNumber = TranslateTwoDigitNumber(number);
-                    break;
-                case 3:
-                case 4:
-                    {
-                        string suffix = GetSuffix(number, digitsCount);
-                        int divider = 10.Power(digitsCount - 1);
-
-                        translatedNumber = TranslateManyDigitNumber(number, divider, suffix);
-                    }
-                    break;
-            }
-
-            return translatedNumber;
-        }
-
-        private string TranslateManyDigitNumber(int number, int divider, string suffix)
-        {
-            string translatedNumber = this.numberPlaceholder;
-
-            if (uniqueNumbers.ContainsKey(number))
-            {
-                translatedNumber = uniqueNumbers[number];
+                translatedNumber = this.uniqueNumbers[number];
             }
             else
             {
-                int reminder = number % divider;
-                int firstDigit = number / divider;
-                int roundedNumber = firstDigit * divider;
+                int digitsCount = number.DigitsCount();
+                int numberDivider = (int)10.Power(digitsCount - 1);
+                int reminder = number % numberDivider;
+                int firstDigit = number / numberDivider;
+                int roundedNumber = firstDigit * numberDivider;
+                string suffix = GetSuffix(number);
 
-                string bigestNumTranslated = uniqueNumbers.GetValueOrDefault(roundedNumber) ?? TranslateNumber(firstDigit) + suffix;
-                
-                string conjunction = " ";
-                if (reminder % (divider / 10) == 0)
+                if (number >= 13 && number <= 19)
                 {
-                    conjunction = " и ";
+                    translatedNumber = TranslateNumber(reminder) + suffix;
                 }
-
-                translatedNumber = bigestNumTranslated + conjunction + TranslateNumber(reminder);
-            }
-
-            return translatedNumber;
-        }
-        private string TranslateTwoDigitNumber(int number)
-        {
-            string translatedNumber = this.numberPlaceholder;
-
-            if (uniqueNumbers.ContainsKey(number))
-            {
-                translatedNumber = uniqueNumbers[number];
-            }
-            else if (number >= 13 && number <= 19)
-            {
-                int lastDigit = number % 10;
-                string lastDigitTranslated = TranslateNumber(lastDigit);
-                translatedNumber = lastDigitTranslated + this.smallTwoDigitsNumSuffix;
-            }
-            else if(number > 20)
-            {
-                int lastDigit = number % 10;
-                int firstDigit = number / 10;
-
-                if (lastDigit == 0)
+                else if (number > 20 && number <= 99)
                 {
-                    string firstDigitTranslated = TranslateNumber(firstDigit);
-                    translatedNumber = firstDigitTranslated + this.bigTwoDigitsNumSuffix;
+                    translatedNumber = reminder == 0 ?
+                        translatedNumber = TranslateNumber(firstDigit) + suffix :
+                        translatedNumber = TranslateNumber(roundedNumber) + " и " + TranslateNumber(reminder);
                 }
                 else
                 {
-                    int roundedNumber = firstDigit * 10;
-                    translatedNumber = TranslateNumber(roundedNumber) + " и " + TranslateNumber(lastDigit);
+                    string roundedNumberTranslated = uniqueNumbers.ContainsKey(roundedNumber) ?
+                        this.uniqueNumbers[roundedNumber] :
+                        TranslateNumber(firstDigit) + suffix;
+                    
+                    int reminderDivider = (int)10.Power(digitsCount - 2);
+                    string conjunction = (reminder % reminderDivider != 0) ? " " : " и ";
+
+                    translatedNumber = roundedNumberTranslated + conjunction + TranslateNumber(reminder);
                 }
             }
 
             return translatedNumber;
         }
-        private string TranslateOneDigitNumber(int number)
+        private string GetSuffix(int number)
         {
-            return this.digits[number];
-        }
+            int digitsCount = number.DigitsCount();
 
-        private string GetSuffix(int number, int digitsCount = -1)
-        {
-            if (digitsCount == -1)
-                digitsCount = number.DigitsCount();
+            string suffix = this.suffixPlaceholder;
 
-            string suffix;
             switch (digitsCount)
             {
+                case 2:
+                    suffix = number < 20 ? this.smallTwoDigitsNumSuffix : this.bigTwoDigitsNumSuffix;
+                    break;
                 case 3:
                     suffix = (number / 400) > 0 ? this.bigThreeDigitsNumSuffix : this.smallThreeDigitsNumSuffix;
                     break;

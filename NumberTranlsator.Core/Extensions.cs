@@ -16,16 +16,20 @@
 
             return digitsCount;
         }
-        public static int Power(this int number, int power)
+        public static double Power(this int number, int power)
         {
-            int currentNumber = number;
+            if (power == 0)
+                return 1;
 
-            for (int i = 1; i < power; i++)
+            int currentNumber = number;
+            int positivePower = power > 0 ? power : power * -1;
+   
+            for (int i = 1; i < positivePower; i++)
             {
                 currentNumber = currentNumber * number;
             }
 
-            return currentNumber;
+            return power > 0 ? currentNumber : 1 / currentNumber;
         }
     }
 }

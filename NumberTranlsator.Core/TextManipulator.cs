@@ -37,9 +37,7 @@ namespace NumberTranlsator.Core
         }
         public string GetTextFromWords(IEnumerable<string> words)
         {
-            string text = string.Empty;
-
-            text = string.Join(' ', words);
+            string text = string.Join(' ', words);
 
             return text;
         }
