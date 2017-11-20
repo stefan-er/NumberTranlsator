@@ -129,7 +129,7 @@ namespace NumberTranlsator.Core
             {
                 int lastDigit = number % 10;
                 string lastDigitTranslated = TranslateNumber(lastDigit);
-                translatedNumber = lastDigitTranslated + smallTwoDigitsNumSuffix;
+                translatedNumber = lastDigitTranslated + this.smallTwoDigitsNumSuffix;
             }
             else if(number > 20)
             {
@@ -139,7 +139,7 @@ namespace NumberTranlsator.Core
                 if (lastDigit == 0)
                 {
                     string firstDigitTranslated = TranslateNumber(firstDigit);
-                    translatedNumber = firstDigitTranslated + bigTwoDigitsNumSuffix;
+                    translatedNumber = firstDigitTranslated + this.bigTwoDigitsNumSuffix;
                 }
                 else
                 {
