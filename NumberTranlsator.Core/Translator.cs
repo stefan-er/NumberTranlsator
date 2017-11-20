@@ -1,30 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace NumberTranlsator.Core
 {
     public class Translator
     {
-        private char[] wordsDelimiters;
-        private string smallTwoDigitsSuffix;
-        private string bigTwoDigitsSuffix;
-        private string smallThreeDigitsSuffix;
-        private string bigThreeDigitsSuffix;
-        private string fourDigitsSuffix;
+        private string smallTwoDigitsNumSuffix;
+        private string bigTwoDigitsNumSuffix;
+        private string smallThreeDigitsNumSuffix;
+        private string bigThreeDigitsNumSuffix;
+        private string fourDigitsNumSuffix;
         private Dictionary<int, string> digits;
         private Dictionary<int, string> uniqueNumbers;
+        private string numberPlaceholder;
         
         public Translator()
         {
-            wordsDelimiters = new char[] { ' ', ',', '.', '!', '?', '-', ':', ';', '(', ')', '"', '\'' };
-
-            smallTwoDigitsSuffix = "надесет";
-            bigTwoDigitsSuffix = "десет";
-            smallThreeDigitsSuffix = "ста";
-            bigThreeDigitsSuffix = "стотин";
-            fourDigitsSuffix = " хиляди";
+            smallTwoDigitsNumSuffix = "надесет";
+            bigTwoDigitsNumSuffix = "десет";
+            smallThreeDigitsNumSuffix = "ста";
+            bigThreeDigitsNumSuffix = "стотин";
+            fourDigitsNumSuffix = " хиляди";
 
             //Remark: not implemented for 0
             digits = new Dictionary<int, string>
@@ -49,27 +44,10 @@ namespace NumberTranlsator.Core
                 { 1000, "хиляда" },
                 { 2000, "две хиляди" }
             };
+
+            numberPlaceholder = "{непознато число}";
         }
-
-        public IEnumerable<string> GetWordsFromTexFile(string filePath)
-        {
-            List<string> words = new List<string>();
-            
-            using (StreamReader reader = new StreamReader(filePath, Encoding.UTF8))
-            {
-                string line = reader.ReadLine();
-                while (line != null)
-                {
-                    IEnumerable<string> lineWords = GetWordsFromString(line);
-
-                    words.AddRange(lineWords);
-
-                    line = reader.ReadLine();
-                }
-            }
-
-            return words;
-        }
+        
         public string TryTranslateNumber(string word)
         {
             string translatedNumber = word;
@@ -77,7 +55,7 @@ namespace NumberTranlsator.Core
             int number;
             if (int.TryParse(word, out number) && number > 0 && number < 10000 )
             {
-                translatedNumber = "{непознато число}";
+                translatedNumber = this.numberPlaceholder;
                 switch (word.Length)
                 {
                     case 1:
@@ -92,24 +70,15 @@ namespace NumberTranlsator.Core
                     case 4:
                         translatedNumber = TranslateFourDigitNumber(number);
                         break;
-                    default:
-                        break;
                 }
             }
 
             return translatedNumber;
         }
 
-        private IEnumerable<string> GetWordsFromString(string text)
-        {
-            string[] words = text.Split(wordsDelimiters, StringSplitOptions.RemoveEmptyEntries);
-
-            return words;
-        }
-
         private string TranslateFourDigitNumber(int number)
         {
-            string translatedNumber = "{непознато число}";
+            string translatedNumber = this.numberPlaceholder;
 
             if (uniqueNumbers.ContainsKey(number))
             {
@@ -118,7 +87,8 @@ namespace NumberTranlsator.Core
             else
             {
                 int reminder = number % 1000;
-                int roundedNumber = (number / 1000) * 1000;
+                int firstDigit = number / 1000;
+                int roundedNumber = (firstDigit) * 1000;
 
                 string thousands = string.Empty;
                 if (uniqueNumbers.ContainsKey(roundedNumber))
@@ -127,7 +97,7 @@ namespace NumberTranlsator.Core
                 }
                 else
                 {
-                    thousands = TranslateOneDigitNumber(roundedNumber / 1000) + fourDigitsSuffix;
+                    thousands = TranslateOneDigitNumber(firstDigit) + fourDigitsNumSuffix;
                 }
                 
                 string conjunction = " ";
@@ -143,7 +113,7 @@ namespace NumberTranlsator.Core
         }
         private string TranslateThreeDigitNumber(int number)
         {
-            string translatedNumber = "{непознато число}";
+            string translatedNumber = this.numberPlaceholder;
 
             if(uniqueNumbers.ContainsKey(number))
             {
@@ -152,7 +122,8 @@ namespace NumberTranlsator.Core
             else
             {
                 int reminder = number % 100;
-                int roundedNumber = (number / 100) * 100;
+                int firstDigit = number / 100;
+                int roundedNumber = firstDigit * 100;
 
                 string hundreds = string.Empty;
                 if (uniqueNumbers.ContainsKey(roundedNumber))
@@ -161,8 +132,8 @@ namespace NumberTranlsator.Core
                 }
                 else
                 {
-                    string hundredsSuffix = roundedNumber < 400 ? this.smallThreeDigitsSuffix : this.bigThreeDigitsSuffix;
-                    hundreds = TranslateOneDigitNumber(roundedNumber / 100) + hundredsSuffix;
+                    string hundredsSuffix = roundedNumber < 400 ? this.smallThreeDigitsNumSuffix : this.bigThreeDigitsNumSuffix;
+                    hundreds = TranslateOneDigitNumber(firstDigit) + hundredsSuffix;
                 }
 
                 string conjunction = " ";
@@ -178,31 +149,32 @@ namespace NumberTranlsator.Core
         }
         private string TranslateTwoDigitNumber(int number)
         {
-            string translatedNumber = "{непознато число}";
+            string translatedNumber = this.numberPlaceholder;
 
             if (uniqueNumbers.ContainsKey(number))
             {
                 translatedNumber = uniqueNumbers[number];
             }
-            else if (number > 12 && number < 20)
+            else if (number >= 13 && number <= 19)
             {
-                string numberAsString = number.ToString();
-                string lastDigit = TranslateOneDigitNumber(int.Parse(numberAsString[1].ToString()));
-                translatedNumber = lastDigit + smallTwoDigitsSuffix;
+                int lastDigit = number % 10;
+                string lastDigitStr = TranslateOneDigitNumber(lastDigit);
+                translatedNumber = lastDigitStr + smallTwoDigitsNumSuffix;
             }
             else if(number > 20)
             {
-                if (number % 10 == 0)
+                int lastDigit = number % 10;
+                int firstDigit = number / 10;
+
+                if (lastDigit == 0)
                 {
-                    string numberAsString = number.ToString();
-                    string firstDigit = TranslateOneDigitNumber(int.Parse(numberAsString[0].ToString()));
-                    translatedNumber = firstDigit + bigTwoDigitsSuffix;
+                    string firstDigitStr = TranslateOneDigitNumber(firstDigit);
+                    translatedNumber = firstDigitStr + bigTwoDigitsNumSuffix;
                 }
                 else
                 {
-                    int reminder = number % 10;
-                    int roundedNumber = (number / 10) * 10;
-                    translatedNumber = TranslateTwoDigitNumber(roundedNumber) + " и " + TranslateOneDigitNumber(reminder);
+                    int roundedNumber = firstDigit * 10;
+                    translatedNumber = TranslateTwoDigitNumber(roundedNumber) + " и " + TranslateOneDigitNumber(lastDigit);
                 }
             }
 
@@ -210,9 +182,7 @@ namespace NumberTranlsator.Core
         }
         private string TranslateOneDigitNumber(int number)
         {
-            string translatedNumber = digits[number];
-
-            return translatedNumber;
+            return this.digits[number];
         }
     }
 }

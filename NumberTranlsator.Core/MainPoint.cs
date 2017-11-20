@@ -7,20 +7,21 @@ namespace NumberTranlsator.Core
     {
         static void Main(string[] args)
         {
+            var textManipulator = new TextManipulator("Files\\SomeFile.txt");
+            IEnumerable<string> textWords = textManipulator.GetWordsFromTex();
+
+            var translatedWords = new List<string>();
             var translator = new Translator();
 
-            IEnumerable<string> words = translator.GetWordsFromTexFile("Files\\SomeFile.txt");
-
-            var textBuilder = new List<string>();
-
-            foreach (var word in words)
+            foreach (var word in textWords)
             {
                 string translatedWord = translator.TryTranslateNumber(word);
-
-                textBuilder.Add(translatedWord);
+                translatedWords.Add(translatedWord);
             }
 
-            Console.WriteLine(string.Join(' ', textBuilder));
+            string translatedText = textManipulator.GetTextFromWords(translatedWords);
+
+            Console.WriteLine(translatedText);
         }
     }
 }
