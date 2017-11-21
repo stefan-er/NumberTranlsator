@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace NumberTranlsator.Core
 {
@@ -9,9 +10,11 @@ namespace NumberTranlsator.Core
         private string smallThreeDigitsNumSuffix;
         private string bigThreeDigitsNumSuffix;
         private string fourDigitsNumSuffix;
-        private Dictionary<int, string> uniqueNumbers;
+        private Dictionary<int, string> uniqueNumbersTranslations;
         private string numberPlaceholder;
         private string suffixPlaceholder;
+        private string emptyConjunction;
+        private string fullConjunction;
         
         public Translator()
         {
@@ -21,9 +24,9 @@ namespace NumberTranlsator.Core
             this.bigThreeDigitsNumSuffix = "стотин";
             this.fourDigitsNumSuffix = " хиляди";
             
-            //Remark: not implemented for 0
-            this.uniqueNumbers = new Dictionary<int, string>
+            this.uniqueNumbersTranslations = new Dictionary<int, string>
             {
+                { 0, "нула" },
                 { 1, "едно" },
                 { 2, "две" },
                 { 3, "три" },
@@ -44,14 +47,16 @@ namespace NumberTranlsator.Core
 
             this.numberPlaceholder = "{непознато число}";
             this.suffixPlaceholder = "{непозната наставка}";
+
+            this.emptyConjunction = " ";
+            this.fullConjunction = " и ";
         }
         
         public string TryTranslateNumber(string word)
         {
             string translatedNumber = word;
 
-            int number;
-            if (int.TryParse(word, out number) && number > 0 && number < 10000 )
+            if (int.TryParse(word, out int number) && number > -1 && number < 1000000)
             {
                 translatedNumber = TranslateNumber(number);
             }
@@ -63,14 +68,14 @@ namespace NumberTranlsator.Core
         {
             string translatedNumber = this.numberPlaceholder;
 
-            if (this.uniqueNumbers.ContainsKey(number))
+            if (this.uniqueNumbersTranslations.ContainsKey(number))
             {
-                translatedNumber = this.uniqueNumbers[number];
+                translatedNumber = this.uniqueNumbersTranslations[number];
             }
             else
             {
                 int digitsCount = number.DigitsCount();
-                int numberDivider = (int)10.Power(digitsCount - 1);
+                int numberDivider = GetNumberDivider(digitsCount);
                 int reminder = number % numberDivider;
                 int firstDigit = number / numberDivider;
                 int roundedNumber = firstDigit * numberDivider;
@@ -84,22 +89,38 @@ namespace NumberTranlsator.Core
                 {
                     translatedNumber = reminder == 0 ?
                         translatedNumber = TranslateNumber(firstDigit) + suffix :
-                        translatedNumber = TranslateNumber(roundedNumber) + " и " + TranslateNumber(reminder);
+                        translatedNumber = TranslateNumber(roundedNumber) + this.fullConjunction + TranslateNumber(reminder);
                 }
                 else
                 {
-                    string roundedNumberTranslated = uniqueNumbers.ContainsKey(roundedNumber) ?
-                        this.uniqueNumbers[roundedNumber] :
+                    string roundedNumberTranslated = uniqueNumbersTranslations.ContainsKey(roundedNumber) ?
+                        this.uniqueNumbersTranslations[roundedNumber] :
                         TranslateNumber(firstDigit) + suffix;
-                    
-                    int reminderDivider = (int)10.Power(digitsCount - 2);
-                    string conjunction = (reminder % reminderDivider != 0) ? " " : " и ";
 
-                    translatedNumber = roundedNumberTranslated + conjunction + TranslateNumber(reminder);
+                    if (reminder == 0)
+                    {
+                        translatedNumber = roundedNumberTranslated;
+                    }
+                    else
+                    {
+                        int reminderDivider = (int)Math.Pow(10, digitsCount - 2);
+                        string conjunction = GetConjunction(reminder, reminderDivider);
+
+                        translatedNumber = roundedNumberTranslated + conjunction + TranslateNumber(reminder);
+                    }
                 }
             }
 
             return translatedNumber;
+        }
+        private int GetNumberDivider(int digitsCount)
+        {
+            int power = digitsCount - 1;
+
+            if (digitsCount > 4 && digitsCount <= 6)
+                power = 3;
+
+            return (int)Math.Pow(10, power);
         }
         private string GetSuffix(int number)
         {
@@ -124,6 +145,21 @@ namespace NumberTranlsator.Core
             }
 
             return suffix;
+        }
+        private string GetConjunction(int number, int divider)
+        {
+            int reminder = number % divider;
+            int @private = number / divider;
+            string conjunction = (@private > 1 && reminder > 0) ? this.emptyConjunction : this.fullConjunction;
+
+            if (divider > 10 && @private == 0 && reminder > 10)
+            {
+                string innerConjunction = GetConjunction(number % 10, divider / 10);
+                
+                conjunction = innerConjunction == this.fullConjunction ? this.emptyConjunction : this.fullConjunction;
+            }
+            
+            return conjunction;
         }
     }
 }
