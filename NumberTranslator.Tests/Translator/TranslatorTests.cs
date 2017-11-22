@@ -52,10 +52,15 @@ namespace NumberTranslator.Translator.Tests
         [InlineData("4071", "четири хиляди седемдесет и едно")]
         [InlineData("6020", "шест хиляди и двадесет")]
         [InlineData("8080", "осем хиляди и осемдесет")]
-        //[InlineData("10000", "десет хиляди")]
-        //[InlineData("11001", "единадесет хиляди и едно")]
-        //[InlineData("12100", "дванадесет хиляди и сто")]
-        //[InlineData("13105", "тринадесет хиляди сто и пет")]
+        [InlineData("10000", "десет хиляди")]
+        [InlineData("11001", "единадесет хиляди и едно")]
+        [InlineData("12100", "дванадесет хиляди и сто")]
+        [InlineData("13105", "тринадесет хиляди сто и пет")]
+        [InlineData("20311", "двадесет хиляди триста и единадесет")]
+        [InlineData("25513", "двадесет и пет хиляди петстотин и тринадесет")]
+        [InlineData("100000", "сто хиляди")]
+        [InlineData("200002", "двеста хиляди и две")]
+        [InlineData("305122", "триста и пет хиляди сто двадесет и две")]
         public void TryTranslateNumber_tests_NaturalNumbers(string number, string expectedResult)
         {
             //Arange

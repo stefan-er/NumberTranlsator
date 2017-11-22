@@ -136,6 +136,8 @@ namespace NumberTranlsator.Core
                     suffix = (number / 400) > 0 ? this.bigThreeDigitsNumSuffix : this.smallThreeDigitsNumSuffix;
                     break;
                 case 4:
+                case 5:
+                case 6:
                     suffix = this.fourDigitsNumSuffix;
                     break;
                 default:
