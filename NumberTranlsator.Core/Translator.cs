@@ -103,8 +103,7 @@ namespace NumberTranlsator.Core
                     }
                     else
                     {
-                        int reminderDivider = (int)Math.Pow(10, digitsCount - 2);
-                        string conjunction = GetConjunction(reminder, reminderDivider);
+                        string conjunction = GetConjunction(reminder, numberDivider / 10);
 
                         translatedNumber = roundedNumberTranslated + conjunction + TranslateNumber(reminder);
                     }
@@ -146,19 +145,21 @@ namespace NumberTranlsator.Core
 
             return suffix;
         }
-        private string GetConjunction(int number, int divider)
+        private string GetConjunction(int reminder, int divider)
         {
-            int reminder = number % divider;
-            int @private = number / divider;
-            string conjunction = (@private > 1 && reminder > 0) ? this.emptyConjunction : this.fullConjunction;
+            //TODO: Reimplement the algorithm because not very good
+            int rem = reminder % divider;
+            int @private = reminder / divider;
+           
+            string conjunction = (@private > 1 && rem > 0) ? this.emptyConjunction : this.fullConjunction;
 
-            if (divider > 10 && @private == 0 && reminder > 10)
+            if (divider > 10 && rem > 20 && (rem % (divider / 10)) != 0)
             {
-                string innerConjunction = GetConjunction(number % 10, divider / 10);
-                
+                string innerConjunction = GetConjunction(reminder % 10, divider / 10);
+
                 conjunction = innerConjunction == this.fullConjunction ? this.emptyConjunction : this.fullConjunction;
             }
-            
+
             return conjunction;
         }
     }
