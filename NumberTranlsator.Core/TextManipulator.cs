@@ -2,18 +2,21 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace NumberTranlsator.Core
 {
     public class TextManipulator
     {
         private string filePath;
-        private char[] wordsDelimiters;
+        private HashSet<string> sentenceEndPunctuationMarks;
+        private HashSet<string> otherPunctuationMarks;
 
         public TextManipulator(string filePath)
         {
             this.filePath = filePath;
-            this.wordsDelimiters = new char[] { ' ', ',', '.', '!', '?', '-', ':', ';', '(', ')', '"', '\'' };
+            this.sentenceEndPunctuationMarks = new HashSet<string> { ".", "!", "?"};
+            this.otherPunctuationMarks = new HashSet<string> { "\\s", ",", ":", ";","\\(", "\\)", "\"", "'"};
         }
 
         public IEnumerable<string> GetWordsFromTex()
@@ -37,14 +40,48 @@ namespace NumberTranlsator.Core
         }
         public string GetTextFromWords(IEnumerable<string> words)
         {
-            string text = string.Join(' ', words);
+            var textBuilder = new StringBuilder();
+            int counter = 1;
+            string prevWord = string.Empty;
+            
+            foreach (string word in words)
+            {
+                string modifiedWord = word;
 
-            return text;
+                if (counter == 1 || this.sentenceEndPunctuationMarks.Contains(prevWord))
+                    modifiedWord = word.FirstLetterToUpper();
+                
+                textBuilder.Append(modifiedWord);
+
+                if(!string.IsNullOrWhiteSpace(word))
+                    prevWord = word;
+
+                counter++;
+            }
+
+            return textBuilder.ToString(); ;
         }
 
         private IEnumerable<string> GetWordsFromString(string text)
         {
-            string[] words = text.Split(this.wordsDelimiters, StringSplitOptions.RemoveEmptyEntries);
+            var regexBuilder = new StringBuilder();
+
+            regexBuilder.Append("([");
+
+            foreach (string delimiter in this.sentenceEndPunctuationMarks)
+            {
+                regexBuilder.Append(delimiter);
+            }
+            foreach (string delimiter in this.otherPunctuationMarks)
+            {
+                regexBuilder.Append(delimiter);
+            }
+
+            regexBuilder.Append("])");
+
+            string pattern = regexBuilder.ToString();
+
+            string[] words = Regex.Split(text, pattern);
 
             return words;
         }
