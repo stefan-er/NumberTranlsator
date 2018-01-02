@@ -61,6 +61,7 @@ namespace NumberTranslator.Translator.Tests
         [InlineData("100000", "сто хиляди")]
         [InlineData("200002", "двеста хиляди и две")]
         [InlineData("305122", "триста и пет хиляди сто двадесет и две")]
+        [InlineData("759300", "седемстотин петдесет и девет хиляди и триста")]
         public void TryTranslateNumber_tests_NaturalNumbers(string number, string expectedResult)
         {
             //Arange
